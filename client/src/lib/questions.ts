@@ -40,6 +40,16 @@ export const getLanguagePreference = (): LanguageCode => {
     if (saved && LANGUAGES.find(l => l.code === saved)) {
       return saved;
     }
+    if (typeof navigator !== 'undefined') {
+      // Use the browser's language settings (Accept-Language) to find a match
+      const browserLanguages = navigator.languages ?? [navigator.language];
+      for (const lang of browserLanguages) {
+        const code = lang.split('-')[0];
+        if (LANGUAGES.some(l => l.code === code)) {
+          return code as LanguageCode;
+        }
+      }
+    }
   } catch (error) {
     console.warn('Failed to load language preference:', error);
   }
