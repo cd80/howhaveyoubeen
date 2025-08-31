@@ -149,12 +149,6 @@ export default function Home() {
 
         {/* Quick Actions */}
         <QuickActions onQuickMood={handleQuickMood} />
-        
-        <div className="text-center mt-12 mb-8">
-          <p className="text-sm text-muted-foreground">
-            Perfect for opening meetings, breaking the ice, or just checking in with each other
-          </p>
-        </div>
 
       </main>
 

@@ -36,7 +36,7 @@ export function QuestionCard({ questionText, categoryLabel, isLoading, onNewQues
             className="text-2xl md:text-3xl lg:text-4xl font-medium text-foreground leading-relaxed transition-opacity duration-300"
             data-testid="text-question"
           >
-            "{questionText}"
+            {questionText}
           </p>
         )}
       </div>
