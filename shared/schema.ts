@@ -19,20 +19,6 @@ export const insertQuestionSchema = createInsertSchema(questions).pick({
 export type InsertQuestion = z.infer<typeof insertQuestionSchema>;
 export type Question = typeof questions.$inferSelect;
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
-
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-
 // Language and filter types
 export const LANGUAGES = [
   { code: 'en', name: 'English' },

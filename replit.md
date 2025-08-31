@@ -32,12 +32,10 @@ Preferred communication style: Simple, everyday language.
 
 ## Database Schema
 - **Questions Table**: Stores questions with mood, occasion, and multilingual translations as JSONB
-- **Users Table**: Basic user authentication structure with username/password
 - **Shared Types**: TypeScript types generated from Drizzle schema definitions
 
 ## External Dependencies
 - **Database Provider**: Neon Database (PostgreSQL) via @neondatabase/serverless
-- **Session Management**: connect-pg-simple for PostgreSQL session storage
 - **UI Components**: Comprehensive Radix UI component collection for accessible primitives
 - **Validation**: Zod for schema validation and type inference
 - **Date Handling**: date-fns for date manipulation utilities
