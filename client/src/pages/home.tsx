@@ -133,10 +133,11 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Filter Controls */}
-        <FilterControls 
+        <FilterControls
           filters={filters}
           onFilterChange={handleFilterChange}
           onReset={handleResetFilters}
+          language={language}
         />
 
         {/* Question Display */}
@@ -148,7 +149,7 @@ export default function Home() {
         />
 
         {/* Quick Actions */}
-        <QuickActions onQuickMood={handleQuickMood} />
+        <QuickActions onQuickMood={handleQuickMood} language={language} />
 
       </main>
 

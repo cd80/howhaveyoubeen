@@ -7,16 +7,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MOODS, OCCASIONS, type MoodType, type OccasionType } from "@shared/schema";
+import {
+  MOODS,
+  OCCASIONS,
+  type MoodType,
+  type OccasionType,
+  type LanguageCode,
+} from "@shared/schema";
 import { type QuestionFilters } from "@/lib/questions";
 
 interface FilterControlsProps {
   filters: QuestionFilters;
   onFilterChange: (filters: Partial<QuestionFilters>) => void;
   onReset: () => void;
+  language: LanguageCode;
 }
 
-export function FilterControls({ filters, onFilterChange, onReset }: FilterControlsProps) {
+export function FilterControls({ filters, onFilterChange, onReset, language }: FilterControlsProps) {
   return (
     <div className="mb-6 flex justify-center">
       <div className="flex items-center gap-3 text-sm">
@@ -32,7 +39,7 @@ export function FilterControls({ filters, onFilterChange, onReset }: FilterContr
             <SelectItem value="all">Any mood</SelectItem>
             {MOODS.map((mood) => (
               <SelectItem key={mood.value} value={mood.value}>
-                {mood.label}
+                {mood.label[language] || mood.label.en}
               </SelectItem>
             ))}
           </SelectContent>
@@ -52,7 +59,7 @@ export function FilterControls({ filters, onFilterChange, onReset }: FilterContr
             <SelectItem value="all">Any occasion</SelectItem>
             {OCCASIONS.map((occasion) => (
               <SelectItem key={occasion.value} value={occasion.value}>
-                {occasion.label}
+                {occasion.label[language] || occasion.label.en}
               </SelectItem>
             ))}
           </SelectContent>
