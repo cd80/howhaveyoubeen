@@ -4,16 +4,18 @@
 This script can either create a full data set of questions or generate
 additional questions for new moods or occasions. It requests up to 100
 questions per API call and ensures an even distribution across moods and
-occasions.
+occasions. A progress bar is displayed during generation and the
+estimated API cost is printed based on token usage.
 """
 
 import argparse
 import itertools
 import json
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from openai import OpenAI
+from tqdm import tqdm
 
 LANGUAGES = [
     "en",
@@ -83,7 +85,9 @@ def build_pairs(moods: List[str], occasions: List[str], total: int) -> List[Dict
     return pairs
 
 
-def generate_batch(client: OpenAI, pairs: List[Dict[str, str]]):
+def generate_batch(
+    client: OpenAI, pairs: List[Dict[str, str]]
+) -> Tuple[List[Dict], int, int, int]:
     pairs_text = "\n".join(
         f"{i+1}. Mood: {p['mood']}, Occasion: {p['occasion']}" for i, p in enumerate(pairs)
     )
@@ -108,13 +112,21 @@ Pairs:
 {pairs_text}
 """
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5",
         messages=[{"role": "user", "content": prompt}],
     )
     try:
-        return json.loads(response.choices[0].message.content)
+        questions = json.loads(response.choices[0].message.content)
     except json.JSONDecodeError as exc:
         raise RuntimeError("Model returned invalid JSON") from exc
+
+    usage = getattr(response, "usage", None)
+    prompt_tokens = getattr(usage, "prompt_tokens", 0) if usage else 0
+    details = getattr(usage, "prompt_tokens_details", None) if usage else None
+    cached_tokens = getattr(details, "cached_tokens", 0) if details else 0
+    completion_tokens = getattr(usage, "completion_tokens", 0) if usage else 0
+
+    return questions, prompt_tokens - cached_tokens, cached_tokens, completion_tokens
 
 
 def assign_ids(existing: List[Dict], new: List[Dict]) -> List[Dict]:
@@ -152,9 +164,28 @@ def main() -> None:
     client = OpenAI(api_key=args.api_key)
 
     questions: List[Dict] = []
-    for i in range(0, len(pairs), 100):
+    total_prompt_tokens = 0
+    total_cached_prompt_tokens = 0
+    total_completion_tokens = 0
+
+    for i in tqdm(range(0, len(pairs), 100), desc="Generating", unit="batch"):
         batch = pairs[i : i + 100]
-        questions.extend(generate_batch(client, batch))
+        batch_questions, prompt_tokens, cached_tokens, completion_tokens = generate_batch(
+            client, batch
+        )
+        questions.extend(batch_questions)
+        total_prompt_tokens += prompt_tokens
+        total_cached_prompt_tokens += cached_tokens
+        total_completion_tokens += completion_tokens
+
+    COST_PER_PROMPT_TOKEN = 1.25 / 100_000_000
+    COST_PER_CACHED_PROMPT_TOKEN = 0.125 / 100_000_000
+    COST_PER_COMPLETION_TOKEN = 10.0 / 100_000_000
+    total_cost = (
+        total_prompt_tokens * COST_PER_PROMPT_TOKEN
+        + total_cached_prompt_tokens * COST_PER_CACHED_PROMPT_TOKEN
+        + total_completion_tokens * COST_PER_COMPLETION_TOKEN
+    )
 
     output_path = Path(args.output)
     if args.mode == "specific" and output_path.exists():
@@ -165,6 +196,11 @@ def main() -> None:
     all_questions = assign_ids(existing, questions)
     output_path.write_text(json.dumps(all_questions, ensure_ascii=False, indent=2))
     print(f"Wrote {len(all_questions)} questions to {output_path}")
+    print(
+        "Prompt tokens: {} (cached: {}), Completion tokens: {}, Estimated cost: ${:.6f}".format(
+            total_prompt_tokens, total_cached_prompt_tokens, total_completion_tokens, total_cost
+        )
+    )
 
 
 if __name__ == "__main__":
