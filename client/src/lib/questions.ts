@@ -15,14 +15,20 @@ export const getLanguageDisplayName = (code: LanguageCode): string => {
   return lang?.name || code;
 };
 
-export const getMoodDisplayName = (mood: MoodType): string => {
+export const getMoodDisplayName = (
+  mood: MoodType,
+  language: LanguageCode = 'en'
+): string => {
   const moodObj = MOODS.find(m => m.value === mood);
-  return moodObj?.label || mood;
+  return moodObj?.label[language] || moodObj?.label['en'] || mood;
 };
 
-export const getOccasionDisplayName = (occasion: OccasionType): string => {
+export const getOccasionDisplayName = (
+  occasion: OccasionType,
+  language: LanguageCode = 'en'
+): string => {
   const occasionObj = OCCASIONS.find(o => o.value === occasion);
-  return occasionObj?.label || occasion;
+  return occasionObj?.label[language] || occasionObj?.label['en'] || occasion;
 };
 
 // Local storage helpers
